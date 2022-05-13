@@ -1,3 +1,4 @@
 pyusb
 numpy
 matplotlib
+requests
