@@ -15,6 +15,7 @@ USB Interface library to communicate with the SKYRC MC3000 Battery Analyzer/Char
 
 from struct import pack, unpack
 from collections import namedtuple
+import json
 import usb.core
 import usb.util
 
@@ -343,18 +344,16 @@ class MC3000(object):
 
 if __name__ == '__main__':
     mc3000 = MC3000()
-    print(mc3000.get_machine_info())
+    info = mc3000.get_machine_info()._asdict()
+    batteries = {
+        battery.slot + 1: battery._asdict() for battery in mc3000.get_battery_data()
+    }
+    status = {
+        charge.slot + 1: charge._asdict() for charge in mc3000.get_charging_progress()
+    }
 
-    print('>>> Checking for firmware updates...')
-    import requests
-    r = requests.get('http://upgrade.skyrc.com/?SN=' + mc3000.machine_info.machine_id)
-    print(r.text)
-    print('____________________________________')
-
-    batteries = mc3000.get_battery_data()
-    for battery in batteries:
-        print(battery)
-
-    status = mc3000.get_charging_progress()
-    for battery in status:
-        print(battery)
+    print(json.dumps({
+        'info': info,
+        'batteries': batteries,
+        'status': status
+    }))
